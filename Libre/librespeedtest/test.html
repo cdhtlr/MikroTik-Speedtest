@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8" />
+<head>
+    <title>LibreSpeed Self Hosted Speedtest</title>
+    <link rel="shortcut icon" href="favicon.ico">
+	<style type="text/css">
+		html,body{
+			margin:0;
+			padding:0;
+			border:none;
+			width:100%; min-height:100%;
+		}
+		html{
+			background-color: hsl(198,72%,35%);
+			font-family: "Segoe UI","Roboto",sans-serif;
+		}
+		body{
+			background-color:#FFFFFF;
+			box-sizing:border-box;
+			width:100%;
+			max-width:70em;
+			margin:4em auto;
+			box-shadow:0 1em 6em #00000080;
+			padding:1em 1em 4em 1em;
+			border-radius:0.4em;
+		}
+		h1,h2,h3,h4,h5,h6{
+			font-weight:300;
+			margin-bottom: 0.1em;
+		}
+		h1{
+			text-align:center;
+		}
+		table{
+			margin:2em 0;
+			width:100%;
+		}
+		table, tr, th, td {
+			border: 1px solid #AAAAAA;
+		}
+		th {
+			width: 6em;
+		}
+		td {
+			word-break: break-all;
+		}
+		div {
+			margin: 1em 0;
+		}
+	</style>
+</head>
+<script type="text/javascript" src="speedtest.js"></script>
+<body>
+    <h1>LibreSpeed Self Hosted Speedtest</h1>
+
+    <h4>IP Address</h4>
+    <p id="ip"></p>
+
+    <h4>Download</h4>
+    <p id="download"></p>
+
+    <h4>Upload</h4>
+    <p id="upload"></p>
+
+    <h4>Latency</h4>
+    <p id="ping"></p>
+
+    <script type="text/javascript">
+        var s=new Speedtest();
+		s.setParameter("test_order","IPDU");//order in which tests will be performed as a string. D=Download, U=Upload, P=Ping+Jitter, I=IP, _=1 second delay
+		s.setParameter("time_auto",true); //if set to true, tests will take less time on faster connections
+		s.setParameter("time_dl_max",3); //5 seconds for the download test
+		s.setParameter("time_ul_max",3); //5 seconds for the upload test
+		s.setParameter("time_ulGraceTime",3); //time to wait in seconds before actually measuring ul speed (wait for buffers to fill)
+		s.setParameter("time_dlGraceTime",3); //time to wait in seconds before actually measuring dl speed (wait for TCP window to increase)
+		s.setParameter("count_ping",3); //number of pings to perform in ping test
+		s.setParameter("getIp_ispInfo",false); //if set to true, the server will include ISP info with the IP address
+		s.setParameter("telemetry_level","basic"); //basic (results only)
+
+        s.onupdate = function (data) { // when status is received, put the values in the appropriate fields
+            document.getElementById('download').textContent = data.dlStatus + ' Mbps'
+            document.getElementById('upload').textContent = data.ulStatus + ' Mbps'
+            document.getElementById('ping').textContent = data.pingStatus + ' ms, ' + data.jitterStatus + ' ms jitter'
+            document.getElementById('ip').textContent = data.clientIp
+        }
+        s.start(); // start the speedtest
+    </script>
+
+	<p><a href="index.html">Home</a></p>
+
+</body>
+</html>
