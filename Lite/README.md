@@ -20,7 +20,7 @@
     -e 'TZ=Asia/Jakarta' \ #set Container Timezone (optional)
     -e 'CRON_FIELD=0 * * * *' \ #set the scheduler to run Ookla Speedtest.net and log the results automatically according to cron format (optional)
     -v '/home/data:/var/www/localhost/htdocs/results/data:rw' \ #Host-dir:Container-dir to make persistent database and records with read-write permission (optional)
-    cdhtlr/mikrotik-speedtest:amd64 #Image for amd64 architecture
+    cdhtlr/mikrotik-speedtest:amd64-lite #Image for amd64 architecture
 
 You can use the above example on <b>docker-compose</b>.
 
