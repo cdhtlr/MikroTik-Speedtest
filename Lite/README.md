@@ -34,11 +34,11 @@ Pull this image to your computer (You can use any computer with any cpu architec
 
 Example to pull image for ARM64 based MikroTik Router:
 
-    docker pull cdhtlr/mikrotik-speedtest:arm64
+    docker pull cdhtlr/mikrotik-speedtest:arm64-lite
 
 Save to TAR:
 
-    docker save cdhtlr/mikrotik-speedtest:arm64 > speedtest.tar
+    docker save cdhtlr/mikrotik-speedtest:arm64-lite > speedtest.tar
 
 then upload to your MikroTik Router.
 
