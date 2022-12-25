@@ -3,9 +3,9 @@
 ![](https://raw.githubusercontent.com/cdhtlr/MikroTik-Speedtest/main/Demo.png "Demo")
 
 <b>System requirements:</b>
-- <b>Any linux PC</b> or <b>MikroTik RouterOS v7.1rc3 (and above)</b> (currently support Container for <b>ARM</b>, <b>ARM64</b>, <b>X86</b> and <b>X86-64</b> based machine, like the <i>CCR2004-16G-2S+</i> device with ARM64 architecture)
-- <b>27MB of disk space remaining</b> (9MB for compressed TAR image, 18MB for uncompressed running image)
-- <b>6MB of RAM space remaining</b> (could be more, depending on the workload)
+- <b>Any linux PC</b> or <b>MikroTik RouterOS v7.1rc3 (and above)</b> (Currently support Container for <b>ARM</b>, <b>ARM64</b>, <b>X86</b> and <b>X86-64</b> based machine, like the <i>CCR2004-16G-2S+</i> device with ARM64 architecture)
+- <b>27MB of disk space left</b> (9MB for compressed TAR image, 18MB for uncompressed running image. You can delete the compressed TAR image once the image is successfully decompressed)
+- <b>About 6MB to 12MB of RAM space left</b> (Could be more, depending on the workload)
 
 ===============================================================
 
