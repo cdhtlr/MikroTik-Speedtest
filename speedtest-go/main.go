@@ -15,44 +15,64 @@ import (
 	"github.com/go-echarts/go-echarts/v2/types"
 )
 
+type downloader struct {
+	buf       []byte
+	r         io.Reader
+	iterNum   int
+	startTime time.Time
+	// speeds
+	avgSpd float64
+}
+
 var (
 	bufKB        	= 50    		// http buffer size in KB
 	maxKB        	= 1000  		// stop speedtest after downloading maxKB
 	thresholdMbps	= 1.0  			// If the test results are above the threshold (Mbps) then the internet is in good condition
 	dataFile		= "data.txt"	// speedtest history file
+	url *string
+	client *http.Client
 	result string
+	float_result, elapsed float64
+	err error
+	_, file *os.File
+	resp *http.Response
+	d *downloader
+	items []opts.LineData
+	n int
+	fileScanner *bufio.Scanner
+	line *charts.Line
 )
 
 func main() {
 	flag.IntVar(&maxKB, "m", 1000, "maximum size in KB to download")
 	flag.Float64Var(&thresholdMbps, "t", 1.0, "download threshold in Mbps, to check for download speed condition")
-	url := flag.String("u", "https://jakarta.speedtest.telkom.net.id.prod.hosts.ooklaserver.net:8080/download?size=25000000", "url to download")
+	url = flag.String("u", "https://jakarta.speedtest.telkom.net.id.prod.hosts.ooklaserver.net:8080/download?size=25000000", "url to download")
 
 	flag.Parse()
 	
-	f, err := os.Create(dataFile)
+	file, err = os.Create(dataFile)
 
     if err != nil {
         fmt.Println(err)
     }
 	
-	defer f.Close()
+	defer file.Close()
 	
 	http.HandleFunc("/", chart)
 	
 	http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {		
-		start(*url)
+		start()
 		fmt.Fprint(w, result)
 	})
 	
 	http.HandleFunc("/condition", func(w http.ResponseWriter, r *http.Request) {		
-		start(*url)
-		int_result, err := strconv.ParseFloat(result, 64)
+		start()
+		float_result, err = strconv.ParseFloat(result, 64)
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		if (int_result >= thresholdMbps){
+		if (float_result >= thresholdMbps){
 			fmt.Fprint(w, "Good")
 		} else {
 			fmt.Fprint(w, "Bad")
@@ -63,8 +83,14 @@ func main() {
     http.ListenAndServe(":80", nil)
 }
 
-func start(url string){
-	resp, err := http.Get(url)
+func start(){
+	client 			= &http.Client{
+					  Transport: &http.Transport{
+						  DisableKeepAlives: true,
+					  },
+	}
+	resp, err = client.Get(*url)
+	
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -74,12 +100,12 @@ func start(url string){
 		fmt.Println("Invalid response ", resp.Status)
 	}
 
-	d := newDownloader(resp.Body)
+	d = newDownloader(resp.Body)
 	d.downSpeed()
 }
 
 func appendData(data string){
-	file,err := os.OpenFile(dataFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file,err = os.OpenFile(dataFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
     
     if err != nil {
 		fmt.Println("Could not open speedtest history data")
@@ -88,22 +114,22 @@ func appendData(data string){
 
 	defer file.Close()
 	 
-    _, err2 := file.WriteString(data+"\n")
+    _, err = file.WriteString(data+"\n")
 
-	if err2 != nil {
+	if err != nil {
 		fmt.Println("Could not write speedtest history data")
 	}
 }
 
 func generateChartItems() []opts.LineData {
-	items := make([]opts.LineData, 0)
+	items = make([]opts.LineData, 0)
 	
-	readFile, err := os.Open(dataFile)
+	file, err = os.Open(dataFile)
   
     if err != nil {
         fmt.Println(err)
     }
-    fileScanner := bufio.NewScanner(readFile)
+    fileScanner = bufio.NewScanner(file)
  
     fileScanner.Split(bufio.ScanLines)
   
@@ -111,12 +137,12 @@ func generateChartItems() []opts.LineData {
 		items = append(items, opts.LineData{Value: fileScanner.Text()})
     }
 
-    readFile.Close()  
+    file.Close()  
 	return items
 }
 
 func chart(w http.ResponseWriter, _ *http.Request) {
-	line := charts.NewLine()
+	line = charts.NewLine()
 	line.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWalden, PageTitle: "Speedtest"}),
 		charts.WithTitleOpts(opts.Title{
@@ -135,15 +161,6 @@ func chart(w http.ResponseWriter, _ *http.Request) {
 	line.Render(w)
 }
 
-type downloader struct {
-	buf       []byte
-	r         io.Reader
-	iterNum   int
-	startTime time.Time
-	// speeds
-	avgSpd float64
-}
-
 func newDownloader(r io.Reader) *downloader {
 	return &downloader{
 		buf:       make([]byte, 1024*bufKB),
@@ -154,7 +171,7 @@ func newDownloader(r io.Reader) *downloader {
 
 func (d *downloader) downSpeed() {
 	for {
-		n, err := io.ReadFull(d.r, d.buf)
+		n, err = io.ReadFull(d.r, d.buf)
 		_ = n
 		d.iterNum++
 		result = d.speedstr(true)
@@ -173,7 +190,7 @@ func (d *downloader) downSpeed() {
 }
 
 func (d *downloader) speeds() {
-	elapsed := time.Since(d.startTime).Seconds()
+	elapsed = time.Since(d.startTime).Seconds()
 	d.avgSpd = float64(d.iterNum*bufKB) / elapsed // in KB/s
 }
 
