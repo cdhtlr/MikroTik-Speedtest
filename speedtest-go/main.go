@@ -52,9 +52,9 @@ func main() {
 	
 	file, err = os.Create(dataFile)
 
-    if err != nil {
-        fmt.Println(err)
-    }
+	if err != nil {
+		fmt.Println(err)
+	}
 	
 	defer file.Close()
 	
@@ -80,15 +80,16 @@ func main() {
 	})
 	
 	fmt.Println("Speedtest web application runs on port 80")
-    http.ListenAndServe(":80", nil)
+	http.ListenAndServe(":80", nil)
 }
 
 func start(){
-	client 			= &http.Client{
-					  Transport: &http.Transport{
-						  DisableKeepAlives: true,
-					  },
+	client = &http.Client{
+		Transport: &http.Transport{
+			DisableKeepAlives: true,
+		},
 	}
+	
 	resp, err = client.Get(*url)
 	
 	if err != nil {
@@ -106,15 +107,15 @@ func start(){
 
 func appendData(data string){
 	file,err = os.OpenFile(dataFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-    
-    if err != nil {
+	
+	if err != nil {
 		fmt.Println("Could not open speedtest history data")
 		return
 	}
 
 	defer file.Close()
 	 
-    _, err = file.WriteString(data+"\n")
+	_, err = file.WriteString(data+"\n")
 
 	if err != nil {
 		fmt.Println("Could not write speedtest history data")
@@ -125,17 +126,18 @@ func generateChartItems() []opts.LineData {
 	items = make([]opts.LineData, 0)
 	
 	file, err = os.Open(dataFile)
-  
-    if err != nil {
-        fmt.Println(err)
-    }
-    fileScanner = bufio.NewScanner(file)
- 
-    fileScanner.Split(bufio.ScanLines)
+	
+	if err != nil {
+		fmt.Println(err)
+	}
+	
+	fileScanner = bufio.NewScanner(file)
+	
+	fileScanner.Split(bufio.ScanLines)
   
 	for fileScanner.Scan() {
 		items = append(items, opts.LineData{Value: fileScanner.Text()})
-    }
+	}
 
     file.Close()  
 	return items
@@ -149,15 +151,16 @@ func chart(w http.ResponseWriter, _ *http.Request) {
 			Title:    "Speedtest Chart",
 			Subtitle: "Go to /test for speedtest or /condition to check for threshold based download speed condition",
 		}),
-		charts.WithTooltipOpts(opts.Tooltip{Show: true}))
+		charts.WithTooltipOpts(opts.Tooltip{Show: true})
+	)
 
 	line.SetXAxis(generateChartItems()).
 		AddSeries("Download Speed", generateChartItems()).
 		SetSeriesOptions(charts.WithLineChartOpts(opts.LineChart{Smooth: true}),charts.WithMarkPointNameTypeItemOpts(
-				opts.MarkPointNameTypeItem{Name: "Maximum", Type: "max"},
-				opts.MarkPointNameTypeItem{Name: "Average", Type: "average"},
-				opts.MarkPointNameTypeItem{Name: "Minimum", Type: "min"},
-			))
+			opts.MarkPointNameTypeItem{Name: "Maximum", Type: "max"},
+			opts.MarkPointNameTypeItem{Name: "Average", Type: "average"},
+			opts.MarkPointNameTypeItem{Name: "Minimum", Type: "min"},
+		))
 	line.Render(w)
 }
 
