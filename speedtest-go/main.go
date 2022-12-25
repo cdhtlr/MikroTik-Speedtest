@@ -28,7 +28,7 @@ var (
 	bufKB        	= 50    		// http buffer size in KB
 	maxKB        	= 1000  		// stop speedtest after downloading maxKB
 	thresholdMbps	= 1.0  			// If the test results are above the threshold (Mbps) then the internet is in good condition
-	dataFile		= "data.txt"	// speedtest history file
+	dataFile	= "data.txt"	// speedtest history file
 	url *string
 	client *http.Client
 	result string
@@ -139,7 +139,7 @@ func generateChartItems() []opts.LineData {
 		items = append(items, opts.LineData{Value: fileScanner.Text()})
 	}
 
-    file.Close()  
+    	file.Close()  
 	return items
 }
 
