@@ -85,6 +85,6 @@ or
     :log info "Your actual download bandwidth currently $result"
 the example output from the script above is: Your actual download bandwidth is currently Good
 
-MAX_KB settings that are too large can cause MikroTik to fail to execute scripts due to timeouts.
+Larger MAX_KB can give better download speedtest result, but MAX_KB settings that are too large can cause MikroTik to fail to execute scripts due to timeouts.
 
 <p><b>Copyright notice:</b><br>The command-line speedtest used in this Docker Image is copyright of <a href="https://github.com/raviraa/speedtest">Raviraa Speedtest</a> and the chart graph used in this Docker Image is copyright of <a href="https://github.com/go-echarts/go-echarts">go-echarts</a>.</p>
