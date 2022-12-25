@@ -69,7 +69,7 @@ For example http://192.168.1.2:8080 (<i>this is the main page containing the Spe
 
 You can go to http://192.168.1.2:8080/test to do download speedtest or go to http://192.168.1.2:8080/condition to check for threshold based download speed condition
 
-Finally, you can now get your actual download speedtest (in Megabits per second) using MikroTik Terminal and do some scripting.
+Finally, you can now get your actual download speedtest (in Megabits per second) using MikroTik Terminal and do some scripting like speedtest based failover.
 
 For example:
 
@@ -85,6 +85,6 @@ or
     :log info "Your actual download bandwidth currently $result"
 the example output from the script above is: Your actual download bandwidth is currently Good
 
-Larger MAX_KB can give better download speedtest result, but MAX_KB settings that are too large can cause MikroTik to fail to execute scripts due to timeouts.
+Larger MAX_KB can give better download speedtest results, but MAX_KB setting that is too large can cause MikroTik to fail to execute scripts due to timeout.
 
 <p><b>Copyright notice:</b><br>The command-line speedtest used in this Docker Image is made by <a href="https://github.com/raviraa/speedtest">Raviraa Speedtest</a> and the chart graph used in this Docker Image is made by <a href="https://github.com/go-echarts/go-echarts">go-echarts</a>.</p>
