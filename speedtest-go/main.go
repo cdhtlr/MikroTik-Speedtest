@@ -151,7 +151,7 @@ func chart(w http.ResponseWriter, _ *http.Request) {
 			Title:    "Speedtest Chart",
 			Subtitle: "Go to /test for speedtest or /condition to check for threshold based download speed condition",
 		}),
-		charts.WithTooltipOpts(opts.Tooltip{Show: true})
+		charts.WithTooltipOpts(opts.Tooltip{Show: true}),
 	)
 
 	line.SetXAxis(generateChartItems()).
