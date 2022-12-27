@@ -17,8 +17,8 @@ import (
 )
 
 type downloader struct {
-	buf			[]byte
-	r			io.Reader
+	buf		[]byte
+	r		io.Reader
 	iterNum		int
 	startTime	time.Time
 	// speeds
@@ -26,22 +26,22 @@ type downloader struct {
 }
 
 var (
-	bufKB										= 50			// http buffer size in KB
-	maxKB										= 1000			// stop speedtest after downloading maxKB
-	thresholdMbps								= 1.0			// If the test results are above the threshold (Mbps) then the internet is in good condition
-	dataFile									= "data.txt"	// speedtest history file
-	url							*string
-	client						*http.Client
-	result						string
-	float_result, elapsed		float64
-	err							error
-	file						*os.File
-	resp						*http.Response
-	d							*downloader
-	items						[]opts.LineData
-	n							int
-	fileScanner					*bufio.Scanner
-	line						*charts.Line
+	bufKB						= 50		// http buffer size in KB
+	maxKB						= 1000		// stop speedtest after downloading maxKB
+	thresholdMbps					= 1.0		// If the test results are above the threshold (Mbps) then the internet is in good condition
+	dataFile					= "data.txt"	// speedtest history file
+	url			*string
+	client			*http.Client
+	result			string
+	float_result, elapsed	float64
+	err			error
+	file			*os.File
+	resp			*http.Response
+	d			*downloader
+	items			[]opts.LineData
+	n			int
+	fileScanner		*bufio.Scanner
+	line			*charts.Line
 )
 
 func main() {
