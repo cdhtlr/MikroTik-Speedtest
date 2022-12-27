@@ -169,7 +169,7 @@ func chart(w http.ResponseWriter, _ *http.Request) {
 func newDownloader(r io.Reader) *downloader {
 	return &downloader{
 		buf:		make([]byte, 1024*bufKB),
-		r:			r,
+		r:		r,
 		startTime:	time.Now(),
 	}
 }
