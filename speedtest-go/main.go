@@ -26,11 +26,11 @@ type downloader struct {
 
 var (
 	bufKB						= 50		// http buffer size in KB
+	file			*os.File
 	client			*http.Client
 	result			string
 	float_result, elapsed	float64
 	err			error
-	file			*os.File
 	resp			*http.Response
 	d			*downloader
 	items			[]opts.LineData
@@ -41,12 +41,7 @@ var (
 )
 
 func main() {
-	// Create speedtest history file
-	file, err = os.Create("data.txt")
-
-	if err != nil {}
-	
-	defer file.Close()
+	createDB()
 	
 	http.HandleFunc("/", chart)
 	
@@ -59,22 +54,38 @@ func main() {
 		start()
 		float_result, err = strconv.ParseFloat(result, 64)
 
-		if err != nil {}
-
-		thresholdMbps, err := strconv.ParseFloat(os.Getenv("THRESHOLD_MBPS"), 64)
+		if err == nil {
+			thresholdMbps, err := strconv.ParseFloat(os.Getenv("THRESHOLD_MBPS"), 64)
 		
-		if err != nil {}
-
-		// If the test results are above the threshold (Mbps) then the internet is in good condition
-		if (float_result >= thresholdMbps){
-			fmt.Fprint(w, "Good")
+			if err == nil {
+				// If the test results are above the threshold (Mbps) then the internet is in good condition
+				if (float_result >= thresholdMbps){
+					fmt.Fprint(w, "Good")
+				} else {
+					fmt.Fprint(w, "Bad")
+				}
+			} else {
+				fmt.Println("Conversion Error: Cannot convert threshold Mbps to float data type")
+				fmt.Fprint(w, "Unknown")
+			}
 		} else {
-			fmt.Fprint(w, "Bad")
+			fmt.Println("Conversion Error: Cannot convert download result to float data type")
+			fmt.Fprint(w, "Unknown")
 		}
 	})
 	
 	fmt.Println("Speedtest web application runs on port 80")
 	http.ListenAndServe(":80", nil)
+}
+
+func createDB(){
+	// Create speedtest history file
+	file, err = os.Create("data.txt")
+	defer file.Close()
+
+	if err != nil {
+		fmt.Println("File Creation Error: Cannot create download history text file")
+	}	
 }
 
 func start(){
@@ -87,46 +98,53 @@ func start(){
 	
 	// Download file from URL
 	resp, err = client.Get(os.Getenv("URL"))
-	
-	if err != nil {}
-
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		fmt.Println("Invalid response ", resp.Status)
-	}
+	
+	if err == nil {
+		if resp.StatusCode != http.StatusOK {
+			fmt.Println("Invalid response ", resp.Status)
+		}
 
-	d = newDownloader(resp.Body)
-	d.downSpeed()
+		d = newDownloader(resp.Body)
+		d.downSpeed()	
+	} else {
+		fmt.Println("Download Error: Cannot download "+os.Getenv("URL"))		
+	}
 }
 
 func appendData(data string){
 	file,err = os.OpenFile("data.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	
-	if err != nil {}
-
 	defer file.Close()
-	 
-	_, err = file.WriteString(data+"\n")
+	
+	if err == nil {
+		_, err = file.WriteString(data+"\n")
 
-	if err != nil {}
+		if err != nil {
+			fmt.Println("File Writing Error: Cannot write to download history text file")			
+		}
+	} else {
+		fmt.Println("File Open Error: Cannot open download history text file")
+	}
 }
 
 func generateChartItems() []opts.LineData {
 	items = make([]opts.LineData, 0)
 	
 	file, err = os.Open("data.txt")
+	defer file.Close()
 	
-	if err != nil {}
-	
-	fileScanner = bufio.NewScanner(file)
-	
-	fileScanner.Split(bufio.ScanLines)
-	
-	for fileScanner.Scan() {
-		items = append(items, opts.LineData{Value: fileScanner.Text()})
+	if err == nil {
+		fileScanner = bufio.NewScanner(file)
+		
+		fileScanner.Split(bufio.ScanLines)
+		
+		for fileScanner.Scan() {
+			items = append(items, opts.LineData{Value: fileScanner.Text()})
+		}		
+	} else {
+		fmt.Println("File Open Error: Cannot open download history text file")
 	}
-	
-	file.Close()
+
 	return items
 }
 
@@ -175,12 +193,16 @@ func (d *downloader) downSpeed() {
 		// Stop speedtest after downloading MAX_KB
 		maxKB, err := strconv.Atoi(os.Getenv("MAX_KB"))
 
-		if err != nil {}
-		
-		if d.iterNum*bufKB >= maxKB {
+		if err == nil {
+			if d.iterNum*bufKB >= maxKB {
+				break
+			}		
+		} else {
+			fmt.Println("Conversion Error: Cannot convert max KB to integer data type")
 			break
 		}
 	}
+	
 	result = d.speedstr(false)
 	appendData(result)
 }
