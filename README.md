@@ -15,7 +15,7 @@
     --name speedtest -d \ #set name "speedtest" and Run container in background and print container ID
     -p 8080:80 \ #Host-port:Container-port to access the app inside this container via port 8080
     -e 'MAX_KB=1000' \ #maximum size in KB to download (optional)
-    -e 'THRESHOLD_MBPS=1.0' \ #download threshold in Mbps, to check for download speed condition (optional)
+    -e 'THRESHOLD=1.0' \ #download threshold in Mbps, to check for download speed condition (optional)
     -e 'URL=https://jakarta.speedtest.telkom.net.id.prod.hosts.ooklaserver.net:8080/download?size=25000000' \ #url to download (optional)
     cdhtlr/mikrotik-speedtest:amd64 #Image for amd64 architecture
 
@@ -47,7 +47,7 @@ Example configuration for MikroTik:
     /ip firewall nat add chain=srcnat action=masquerade src-address=192.168.1.0/24
     /ip firewall nat add chain=dstnat action=dst-nat protocol=tcp to-addresses=192.168.1.2 to-ports=80 dst-port=8080
     /container envs add list=speedtest name=MAX_KB value="1000"
-    /container envs add list=speedtest name=THRESHOLD_MBPS value="1.0"
+    /container envs add list=speedtest name=THRESHOLD value="1.0"
     /container envs add list=speedtest name=URL value="https://jakarta.speedtest.telkom.net.id.prod.hosts.ooklaserver.net:8080/download?size=25000000"
     /container add file=speedtest.tar interface=veth1-speedtest envlist=speedtest hostname=speedtest logging=yes
 
