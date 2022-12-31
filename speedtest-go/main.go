@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"runtime"
 	"runtime/debug"
 	"bufio"
 	"io"
@@ -16,17 +17,16 @@ import (
 )
 
 type downloader struct {
+	startTime	time.Time
+	avgSpd		float64
+	iterNum		int
 	buf		[]byte
 	r		io.Reader
-	iterNum		int
-	startTime	time.Time
-	// speeds
-	avgSpd		float64
 }
 
 var (
 	bufKB						= 50		// http buffer size in KB
-	result			string
+	result			float64
 )
 
 func main() {
@@ -41,27 +41,16 @@ func main() {
 		debug.FreeOSMemory()
 	})
 	
-	http.HandleFunc("/condition", func(w http.ResponseWriter, r *http.Request) {		
+	http.HandleFunc("/condition", func(w http.ResponseWriter, r *http.Request) {
 		start()
-		float_result, err := strconv.ParseFloat(result, 64)
 
-		if err == nil {
-			thresholdMbps, err := strconv.ParseFloat(os.Getenv("THRESHOLD_MBPS"), 64)
+		threshold, _ := strconv.ParseFloat(os.Getenv("THRESHOLD"), 64)
 		
-			if err == nil {
-				// If the test results are above the threshold (Mbps) then the internet is in good condition
-				if (float_result >= thresholdMbps){
-					fmt.Fprint(w, "Good")
-				} else {
-					fmt.Fprint(w, "Bad")
-				}
-			} else {
-				fmt.Println("Conversion Error: Cannot convert threshold Mbps to float data type")
-				fmt.Fprint(w, "Unknown")
-			}
+		// If the test results are above the threshold (Mbps) then the internet is in good condition
+		if (result >= threshold){
+			fmt.Fprint(w, "Good")
 		} else {
-			fmt.Println("Conversion Error: Cannot convert download result to float data type")
-			fmt.Fprint(w, "Unknown")
+			fmt.Fprint(w, "Bad")
 		}
 		
 		debug.FreeOSMemory()
@@ -73,18 +62,16 @@ func main() {
 
 func createDB(){
 	defer debug.FreeOSMemory()
+	defer runtime.GC();
 
 	// Create speedtest history file
-	file, err := os.Create("data.txt")
+	file, _ := os.Create("data.txt")
 	defer file.Close()
-
-	if err != nil {
-		fmt.Println("File Creation Error: Cannot create download history text file")
-	}	
 }
 
 func start(){
 	defer debug.FreeOSMemory()
+	defer runtime.GC();
 
 	client := &http.Client{
 		Transport: &http.Transport{
@@ -93,56 +80,44 @@ func start(){
 	}
 	
 	// Download file from URL
-	resp, err := client.Get(os.Getenv("URL"))
+	resp, _ := client.Get(os.Getenv("URL"))
 	defer resp.Body.Close()
 	
-	if err == nil {
-		if resp.StatusCode != http.StatusOK {
-			fmt.Println("Invalid response ", resp.Status)
-		}
-
-		d := newDownloader(resp.Body)
-		d.downSpeed()	
-	} else {
-		fmt.Println("Download Error: Cannot download "+os.Getenv("URL"))		
+	defer client.CloseIdleConnections()
+	
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println("Invalid response ", resp.Status)
 	}
+
+	d := newDownloader(resp.Body)
+	d.downSpeed()
 }
 
-func appendData(data *string){
+func appendData(data *float64){
 	defer debug.FreeOSMemory()
+	defer runtime.GC();
 
-	file, err := os.OpenFile("data.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, _ := os.OpenFile("data.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	defer file.Close()
 	
-	if err == nil {
-		_, err := file.WriteString(*data+"\n")
-
-		if err != nil {
-			fmt.Println("File Writing Error: Cannot write to download history text file")			
-		}
-	} else {
-		fmt.Println("File Open Error: Cannot open download history text file")
-	}
+	file.WriteString(fmt.Sprintf("%.2f", *data)+"\n")
 }
 
 func generateChartItems() []opts.LineData {
 	defer debug.FreeOSMemory()
+	defer runtime.GC();
 
 	items := make([]opts.LineData, 0)
 	
-	file, err := os.Open("data.txt")
+	file, _ := os.Open("data.txt")
 	defer file.Close()
 	
-	if err == nil {
-		fileScanner := bufio.NewScanner(file)
-		
-		fileScanner.Split(bufio.ScanLines)
-		
-		for fileScanner.Scan() {
-			items = append(items, opts.LineData{Value: fileScanner.Text()})
-		}		
-	} else {
-		fmt.Println("File Open Error: Cannot open download history text file")
+	fileScanner := bufio.NewScanner(file)
+	
+	fileScanner.Split(bufio.ScanLines)
+	
+	for fileScanner.Scan() {
+		items = append(items, opts.LineData{Value: fileScanner.Text()})
 	}
 
 	return items
@@ -150,6 +125,7 @@ func generateChartItems() []opts.LineData {
 
 func chart(w http.ResponseWriter, _ *http.Request) {
 	defer debug.FreeOSMemory()
+	defer runtime.GC();
 
 	line := charts.NewLine()
 	line.SetGlobalOptions(
@@ -184,7 +160,7 @@ func (d *downloader) downSpeed() {
 		n, err := io.ReadFull(d.r, d.buf)
 		_ = n
 		d.iterNum++
-		result = d.speedstr(true)
+		result = d.speedres(true)
 		if err != nil {
 			if err == io.EOF || err == io.ErrUnexpectedEOF {
 				break
@@ -192,34 +168,38 @@ func (d *downloader) downSpeed() {
 		}
 		
 		// Stop speedtest after downloading MAX_KB
-		maxKB, err := strconv.Atoi(os.Getenv("MAX_KB"))
-
-		if err == nil {
-			if d.iterNum*bufKB >= maxKB {
-				break
-			}		
-		} else {
-			fmt.Println("Conversion Error: Cannot convert max KB to integer data type")
+		maxKB, _ := strconv.Atoi(os.Getenv("MAX_KB"))
+		
+		if d.iterNum*bufKB >= maxKB {
 			break
 		}
 	}
 	
-	result = d.speedstr(false)
+	result = d.speedres(false)
 	appendData(&result)
+	
+	runtime.GC()
+	_ = result
+	
+	debug.FreeOSMemory()
 }
 
 func (d *downloader) speeds() {
 	elapsed := time.Since(d.startTime).Seconds()
 	d.avgSpd = float64(d.iterNum*bufKB) / elapsed // in KB/s
+	
+	runtime.GC();
+	_ = d.avgSpd
 }
 
-func (d *downloader) speedstr(notFinalRun bool) string {
+func (d *downloader) speedres(notFinalRun bool) float64 {
 	defer debug.FreeOSMemory()
+	defer runtime.GC();
 
 	if notFinalRun {
 		d.speeds()
 	}
 	
 	// converts download speed to Mb/s.
-	return fmt.Sprintf("%.2f", d.avgSpd/1024*8)
+	return d.avgSpd/1024*8
 }
