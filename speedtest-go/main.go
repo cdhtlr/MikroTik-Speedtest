@@ -109,6 +109,8 @@ func generateChartItems() []opts.LineData {
 }
 
 func chart(w http.ResponseWriter, _ *http.Request) {
+	defer debug.FreeOSMemory()
+
 	line := charts.NewLine()
 	line.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWalden, PageTitle: "Speedtest"}),
