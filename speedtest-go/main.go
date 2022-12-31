@@ -178,9 +178,6 @@ func (d *downloader) downSpeed() {
 	result = d.speedres(false)
 	appendData(&result)
 	
-	runtime.GC()
-	_ = result
-	
 	debug.FreeOSMemory()
 }
 
