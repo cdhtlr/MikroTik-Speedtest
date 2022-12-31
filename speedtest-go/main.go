@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"runtime"
 	"runtime/debug"
 	"bufio"
 	"io"
@@ -37,8 +36,6 @@ func main() {
 	http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {		
 		start()
 		fmt.Fprint(w, result)
-		
-		debug.FreeOSMemory()
 	})
 	
 	http.HandleFunc("/condition", func(w http.ResponseWriter, r *http.Request) {
@@ -52,8 +49,6 @@ func main() {
 		} else {
 			fmt.Fprint(w, "Bad")
 		}
-		
-		debug.FreeOSMemory()
 	})
 	
 	fmt.Println("Speedtest web application runs on port 80")
@@ -61,9 +56,6 @@ func main() {
 }
 
 func createDB(){
-	defer debug.FreeOSMemory()
-	defer runtime.GC();
-
 	// Create speedtest history file
 	file, _ := os.Create("data.txt")
 	defer file.Close()
@@ -71,7 +63,6 @@ func createDB(){
 
 func start(){
 	defer debug.FreeOSMemory()
-	defer runtime.GC();
 
 	client := &http.Client{
 		Transport: &http.Transport{
@@ -94,9 +85,6 @@ func start(){
 }
 
 func appendData(data *float64){
-	defer debug.FreeOSMemory()
-	defer runtime.GC();
-
 	file, _ := os.OpenFile("data.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	defer file.Close()
 	
@@ -104,9 +92,6 @@ func appendData(data *float64){
 }
 
 func generateChartItems() []opts.LineData {
-	defer debug.FreeOSMemory()
-	defer runtime.GC();
-
 	items := make([]opts.LineData, 0)
 	
 	file, _ := os.Open("data.txt")
@@ -124,9 +109,6 @@ func generateChartItems() []opts.LineData {
 }
 
 func chart(w http.ResponseWriter, _ *http.Request) {
-	defer debug.FreeOSMemory()
-	defer runtime.GC();
-
 	line := charts.NewLine()
 	line.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWalden, PageTitle: "Speedtest"}),
@@ -177,22 +159,14 @@ func (d *downloader) downSpeed() {
 	
 	result = d.speedres(false)
 	appendData(&result)
-	
-	debug.FreeOSMemory()
 }
 
 func (d *downloader) speeds() {
 	elapsed := time.Since(d.startTime).Seconds()
 	d.avgSpd = float64(d.iterNum*bufKB) / elapsed // in KB/s
-	
-	runtime.GC();
-	_ = d.avgSpd
 }
 
 func (d *downloader) speedres(notFinalRun bool) float64 {
-	defer debug.FreeOSMemory()
-	defer runtime.GC();
-
 	if notFinalRun {
 		d.speeds()
 	}
