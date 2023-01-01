@@ -34,11 +34,20 @@ func main() {
 	
 	http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {		
 		start()
+		
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("Expires", "0")
+
 		fmt.Fprintf(w, "%.2f", result)
 	})
 	
 	http.HandleFunc("/condition", func(w http.ResponseWriter, r *http.Request) {
 		start()
+		
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("Expires", "0")
 
 		threshold, _ := strconv.ParseFloat(os.Getenv("THRESHOLD"), 64)
 		
