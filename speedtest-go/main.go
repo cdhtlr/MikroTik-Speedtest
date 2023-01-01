@@ -24,7 +24,7 @@ type downloader struct {
 }
 
 var (
-	result			float64
+	result		float64
 )
 
 func main() {
