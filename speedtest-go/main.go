@@ -24,7 +24,6 @@ type downloader struct {
 }
 
 var (
-	bufKB						= 50		// http buffer size in KB
 	result			float64
 )
 
@@ -35,7 +34,7 @@ func main() {
 	
 	http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {		
 		start()
-		fmt.Fprint(w, result)
+		fmt.Fprintf(w, "%.2f", result)
 	})
 	
 	http.HandleFunc("/condition", func(w http.ResponseWriter, r *http.Request) {
@@ -84,11 +83,11 @@ func start(){
 	d.downSpeed()
 }
 
-func appendData(data *float64){
+func appendData(data float64){
 	file, _ := os.OpenFile("data.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	defer file.Close()
 	
-	file.WriteString(fmt.Sprintf("%.2f", *data)+"\n")
+	file.WriteString(fmt.Sprintf("%.2f", data)+"\n")
 }
 
 func generateChartItems() []opts.LineData {
@@ -133,7 +132,8 @@ func chart(w http.ResponseWriter, _ *http.Request) {
 
 func newDownloader(r io.Reader) *downloader {
 	return &downloader{
-		buf:		make([]byte, 1024*bufKB),
+		// http buffer size in KB is 50
+		buf:		make([]byte, 1024*50),
 		r:		r,
 		startTime:	time.Now(),
 	}
@@ -154,18 +154,18 @@ func (d *downloader) downSpeed() {
 		// Stop speedtest after downloading MAX_KB
 		maxKB, _ := strconv.Atoi(os.Getenv("MAX_KB"))
 		
-		if d.iterNum*bufKB >= maxKB {
+		if d.iterNum*50 >= maxKB {
 			break
 		}
 	}
 	
 	result = d.speedres(false)
-	appendData(&result)
+	appendData(result)
 }
 
 func (d *downloader) speeds() {
 	elapsed := time.Since(d.startTime).Seconds()
-	d.avgSpd = float64(d.iterNum*bufKB) / elapsed // in KB/s
+	d.avgSpd = float64(d.iterNum*50) / elapsed // in KB/s
 }
 
 func (d *downloader) speedres(notFinalRun bool) float64 {
