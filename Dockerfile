@@ -15,7 +15,6 @@ ENV MAX_KB="1000"
 ENV THRESHOLD="1.0"
 ENV URL="https://jakarta.speedtest.telkom.net.id.prod.hosts.ooklaserver.net:8080/download?size=25000000"
 
-COPY --from=builder /etc/ssl/certs /etc/ssl/certs
 COPY --from=builder /speedtest-go/speedtest .
 
 EXPOSE 80
