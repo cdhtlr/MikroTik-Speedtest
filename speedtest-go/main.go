@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"runtime/debug"
+	"crypto/tls"
 	"bufio"
 	"io"
 	"time"
@@ -75,6 +76,11 @@ func start(){
 	client := &http.Client{
 		Transport: &http.Transport{
 			DisableKeepAlives: true,
+			MaxIdleConnsPerHost: 1,
+			IdleConnTimeout: 1 * time.Second,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
 		},
 	}
 	
