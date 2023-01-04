@@ -9,11 +9,11 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -extldflags=-static" -a -o
 # generate clean, final image for end users
 FROM scratch
 
-LABEL maintainer="Sidik Hadi Kurniadi" name="Mikrotik Speedtest" description="Base minimum MikroTik-Terminal friendly Download Speedtest" version="3.3"
+LABEL maintainer="Sidik Hadi Kurniadi" name="Mikrotik Speedtest" description="Base minimum MikroTik-Terminal friendly Download Speedtest" version="4"
 
-ENV MAX_KB="1000"
-ENV THRESHOLD="1.0"
 ENV URL="https://jakarta.speedtest.telkom.net.id.prod.hosts.ooklaserver.net:8080/download?size=25000000"
+ENV MAX_DLSIZE="1.0"
+ENV MIN_THRESHOLD="1.0"
 
 COPY --from=builder /speedtest-go/speedtest .
 
