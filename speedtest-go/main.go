@@ -31,14 +31,13 @@ var (
 func main() {
 	createDB()
 	
-	http.HandleFunc("/", chart)
-	
-	http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {		
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {		
 		start()
 		
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0")
 		w.Header().Set("Pragma", "no-cache")
 		w.Header().Set("Expires", "0")
+		w.WriteHeader(resultToCode(result))
 
 		fmt.Fprintf(w, "%.2f", result)
 	})
@@ -49,17 +48,17 @@ func main() {
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0")
 		w.Header().Set("Pragma", "no-cache")
 		w.Header().Set("Expires", "0")
+		w.WriteHeader(resultToCode(result))
 
-		threshold, _ := strconv.ParseFloat(os.Getenv("THRESHOLD"), 64)
-		
-		// If the test results are above the threshold (Mbps) then the internet is in good condition
-		if (result >= threshold){
+		if (resultToCode(result) == 200){
 			fmt.Fprint(w, "Good")
 		} else {
-			fmt.Fprint(w, "Bad")
+			fmt.Fprint(w, "Bad")			
 		}
 	})
 	
+	http.HandleFunc("/chart", chart)
+
 	fmt.Println("Speedtest web application runs on port 80")
 	http.ListenAndServe(":80", nil)
 }
@@ -98,6 +97,17 @@ func start(){
 	d.downSpeed()
 }
 
+func resultToCode(result float64) int {
+	threshold, _ := strconv.ParseFloat(os.Getenv("MIN_THRESHOLD"), 64)
+	
+	// If the test result is above the threshold (Mbps) or equal then the internet is in good condition	
+	if (result >= threshold){
+		return 200
+	}
+	
+	return 201	
+}
+
 func appendData(data float64){
 	file, _ := os.OpenFile("data.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	defer file.Close()
@@ -125,18 +135,16 @@ func generateChartItems() []opts.LineData {
 func chart(w http.ResponseWriter, _ *http.Request) {
 	defer debug.FreeOSMemory()
 
+	items := generateChartItems()
+	
 	line := charts.NewLine()
 	line.SetGlobalOptions(
-		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWalden, PageTitle: "Speedtest"}),
-		charts.WithTitleOpts(opts.Title{
-			Title:		"Speedtest Chart",
-			Subtitle:	"Go to /test for speedtest or /condition to check for threshold based download speed condition",
-		}),
+		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWalden, PageTitle: "Speedtest Chart"}),
 		charts.WithTooltipOpts(opts.Tooltip{Show: true}),
 	)
 
-	line.SetXAxis(generateChartItems()).
-		AddSeries("Download Speed", generateChartItems()).
+	line.SetXAxis(items).
+		AddSeries("Download Speed", items).
 		SetSeriesOptions(charts.WithLineChartOpts(opts.LineChart{Smooth: true}),charts.WithMarkPointNameTypeItemOpts(
 			opts.MarkPointNameTypeItem{Name: "Maximum", Type: "max"},
 			opts.MarkPointNameTypeItem{Name: "Average", Type: "average"},
@@ -166,10 +174,10 @@ func (d *downloader) downSpeed() {
 			}
 		}
 		
-		// Stop speedtest after downloading MAX_KB
-		maxKB, _ := strconv.Atoi(os.Getenv("MAX_KB"))
+		// Stop speedtest after downloading MAX_DLSIZE (in MB)
+		maxDLSIZE, _ := strconv.ParseFloat(os.Getenv("MAX_DLSIZE"), 64)
 		
-		if d.iterNum*50 >= maxKB {
+		if float64(d.iterNum*50/1024) >= maxDLSIZE {
 			break
 		}
 	}
@@ -180,7 +188,7 @@ func (d *downloader) downSpeed() {
 
 func (d *downloader) speeds() {
 	elapsed := time.Since(d.startTime).Seconds()
-	d.avgSpd = float64(d.iterNum*50) / elapsed // in KB/s
+	d.avgSpd = float64(d.iterNum*50/1024*8) / elapsed // in Mb/s
 }
 
 func (d *downloader) speedres(notFinalRun bool) float64 {
@@ -188,6 +196,5 @@ func (d *downloader) speedres(notFinalRun bool) float64 {
 		d.speeds()
 	}
 	
-	// converts download speed to Mb/s.
-	return d.avgSpd/1024*8
+	return d.avgSpd
 }
