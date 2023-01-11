@@ -82,12 +82,12 @@ func start(){
 			},
 		},
 	}
+
+	defer client.CloseIdleConnections()
 	
 	// Download file from URL
-	resp, _ := client.Get(os.Getenv("URL"))
+	resp, _ := client.Get(os.Getenv("URL"))	
 	defer resp.Body.Close()
-	
-	defer client.CloseIdleConnections()
 	
 	if resp.StatusCode != http.StatusOK {
 		fmt.Println("Invalid response ", resp.Status)
