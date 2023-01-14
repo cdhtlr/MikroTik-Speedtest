@@ -1,4 +1,4 @@
-<b>Preview videos  :</b> https://www.youtube.com/watch?v=ItQ3dAABdOU&list=PLyx101r52fx7jqx3gHLP9T83HwaJSULEn
+<b>Preview videos  :</b> https://www.youtube.com/playlist?list=PLyx101r52fx7jqx3gHLP9T83HwaJSULEn
 
 <b>DockerHub :</b> https://hub.docker.com/r/cdhtlr/mikrotik-speedtest
 
