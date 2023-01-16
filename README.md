@@ -27,7 +27,24 @@ You can use the above example on <b>docker-compose</b>.
 
 <b>For use as Container (inside MikroTik):</b>
 
-Pull this image to your computer (You can use any computer with any cpu architecture).
+Example configuration for MikroTik:
+
+    /interface veth add name=veth1-speedtest address=192.168.1.2/24 gateway=192.168.1.1
+    /interface bridge add name=bridge-docker
+    /interface bridge port add interface=veth1-speedtest bridge=bridge-docker
+    /ip address add address=192.168.1.1/24 interface=bridge-docker
+    /ip firewall nat add chain=srcnat action=masquerade src-address=192.168.1.0/24
+    /ip firewall nat add chain=dstnat action=dst-nat protocol=tcp to-addresses=192.168.1.2 to-ports=80 dst-port=8080
+    /container envs add name=speedtest key=URL value="https://jakarta.speedtest.telkom.net.id.prod.hosts.ooklaserver.net:8080/download?size=25000000"
+    /container envs add name=speedtest key=MAX_DLSIZE value="1.0"
+    /container envs add name=speedtest key=MIN_THRESHOLD value="1.0"
+
+Get an image from an external library:
+
+    /container/config/set registry-url=https://registry-1.docker.io tmpdir=disk1/pull
+    /container/add interface=veth1-speedtest root-dir=disk1/speedtest envlist=speedtest hostname=speedtest logging=yes remote-image=cdhtlr/mikrotik-speedtest:amd64
+
+or pull this image to your computer (You can use any computer with any cpu architecture).
 
 Example to pull image for ARM64 based MikroTik Router:
 
@@ -39,19 +56,9 @@ Save to TAR:
 
 then upload to your MikroTik Router.
 
+Import image from computer:
 
-Example configuration for MikroTik:
-
-    /interface veth add name=veth1-speedtest address=192.168.1.2/24 gateway=192.168.1.1
-    /interface bridge add name=bridge-docker
-    /interface bridge port add interface=veth1-speedtest bridge=bridge-docker
-    /ip address add address=192.168.1.1/24 interface=bridge-docker
-    /ip firewall nat add chain=srcnat action=masquerade src-address=192.168.1.0/24
-    /ip firewall nat add chain=dstnat action=dst-nat protocol=tcp to-addresses=192.168.1.2 to-ports=80 dst-port=8080
-    /container envs add list=speedtest name=URL value="https://jakarta.speedtest.telkom.net.id.prod.hosts.ooklaserver.net:8080/download?size=25000000"
-    /container envs add list=speedtest name=MAX_DLSIZE value="1.0"
-    /container envs add list=speedtest name=MIN_THRESHOLD value="1.0"
-    /container add file=speedtest.tar interface=veth1-speedtest envlist=speedtest hostname=speedtest logging=yes
+    /container add interface=veth1-speedtest root-dir=disk1/speedtest envlist=speedtest hostname=speedtest logging=yes file=speedtest.tar
 
 Check your container list in MikroTik Router:
 
