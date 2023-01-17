@@ -6,7 +6,7 @@
 
 <b>System requirements:</b>
 - <b>Any linux PC</b> or <b>MikroTik RouterOS v7.6 (and above)</b> (Currently support Container for <b>ARM</b>, <b>ARM64</b>, <b>X86</b> and <b>X86-64</b> based machine, like the <i>CCR2004-16G-2S+</i> device with ARM64 architecture)
-- <b>15MB of disk space left</b> (5MB for compressed TAR image, 10MB for uncompressed running image. You can delete the compressed TAR image once the image is successfully decompressed)
+- <b>13MB of disk space left</b> (4MB for compressed TAR image, 9MB for uncompressed running image. You can delete the compressed TAR image once the image is successfully decompressed)
 - <b>6MB RAM space left</b> (Could be more, depending on the workload)
 
 ===============================================================
