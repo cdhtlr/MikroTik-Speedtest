@@ -109,6 +109,10 @@ If the memory usage in the container continues to grow and you are not comfortab
 
 Memory limit that is too small can reduce CPU performance. So please set the memory limit wisely.
 
+<b>Image size efficiency:</b>
+
+![](https://raw.githubusercontent.com/cdhtlr/MikroTik-Speedtest/main/Dive-in_result.png "Dive-in efficiency test result")
+
 <b>Copyright notice:</b>
 
 The command-line speedtest used in this Docker Image is modified from <a href="https://github.com/raviraa/speedtest">Raviraa Speedtest</a> and the chart used in this Docker Image is made by <a href="https://github.com/go-echarts/go-echarts">go-echarts</a>.
