@@ -19,6 +19,9 @@
     -e 'URL=https://jakarta.speedtest.telkom.net.id.prod.hosts.ooklaserver.net:8080/download?size=25000000' \ #url to download (optional)
     -e 'MAX_DLSIZE=1.0' \ #maximum size in MB (Megabytes) to download (optional)
     -e 'MIN_THRESHOLD=1.0' \ #download threshold in Mbps (Mbits per sec), to check for download speed condition (optional)
+	-e 'CONCURENT_CONNECTION=4' #number of concurrent connections to speed up download tests using parallelism (optional)
+	-e 'ALLOW_MEMORY_BUFFER=YES' #YES to allow memory usage if the URL does not support parallel downloading and MAX_DLSIZE under download file size, enter NO if you do not allow memory usage for streaming downloads (optional)
+
     cdhtlr/mikrotik-speedtest:amd64 #Image for amd64 architecture
 
 You can use the above example on <b>docker-compose</b>.
@@ -38,6 +41,8 @@ Example configuration for MikroTik:
     /container envs add name=speedtest key=URL value="https://jakarta.speedtest.telkom.net.id.prod.hosts.ooklaserver.net:8080/download?size=25000000"
     /container envs add name=speedtest key=MAX_DLSIZE value="1.0"
     /container envs add name=speedtest key=MIN_THRESHOLD value="1.0"
+    /container envs add name=speedtest key=CONCURENT_CONNECTION value="4"
+    /container envs add name=speedtest key=ALLOW_MEMORY_BUFFER value="YES"
 
 Get an image from an external library:
 
@@ -115,4 +120,4 @@ Memory limit that is too small can reduce CPU performance. So please set the mem
 
 <b>Copyright notice:</b>
 
-The command-line speedtest used in this Docker Image is modified from <a href="https://github.com/raviraa/speedtest">Raviraa Speedtest</a> and the chart used in this Docker Image is made by <a href="https://github.com/go-echarts/go-echarts">go-echarts</a>.
+The source code of this program is similar to <a href="https://github.com/cdhtlr/GoParallelDownload">GoParallelDownload</a> and the chart used in this Docker Image is made by <a href="https://github.com/go-echarts/go-echarts">go-echarts</a>.
