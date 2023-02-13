@@ -19,8 +19,8 @@
     -e 'URL=https://jakarta.speedtest.telkom.net.id.prod.hosts.ooklaserver.net:8080/download?size=25000000' \ #url to download (optional)
     -e 'MAX_DLSIZE=1.0' \ #maximum size in MB (Megabytes) to download (optional)
     -e 'MIN_THRESHOLD=1.0' \ #download threshold in Mbps (Mbits per sec), to check for download speed condition (optional)
-	-e 'CONCURENT_CONNECTION=4' #number of concurrent connections to speed up download tests using parallelism (optional)
-	-e 'ALLOW_MEMORY_BUFFER=YES' #YES to allow memory usage if the URL does not support parallel downloading and MAX_DLSIZE under download file size, enter NO if you do not allow memory usage for streaming downloads (optional)
+    -e 'CONCURENT_CONNECTION=4' \ #number of concurrent connections to speed up download tests using parallelism (optional)
+    -e 'ALLOW_MEMORY_BUFFER=YES' \ #YES to allow memory usage if the URL does not support parallel downloading and MAX_DLSIZE under download file size, enter NO if you do not allow memory usage for streaming downloads (optional)
 
     cdhtlr/mikrotik-speedtest:amd64 #Image for amd64 architecture
 
